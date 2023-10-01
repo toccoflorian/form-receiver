@@ -8,7 +8,7 @@ from werkzeug.utils import escape
 
 
 def create_filename(type, given_name, family_name, date):
-    return type + "-->" + given_name + "_" + family_name.upper() + "--" + date[0] + "_" + date[1]
+    return type + "___" + given_name + "-" + family_name.upper() + "___" + date[0] + "___" + date[1]
 
 def create_file_tittle(type, given_name, family_name, date):
     return "\n\n\n"  + given_name + " " + family_name.upper() + " le " + date[0] + " " + date[1] +"\n\n" + type +  "\n\n\n"
@@ -79,5 +79,7 @@ def index():
     status_code = save_data(data)
     return jsonify({"message": status_code})
 
-app.run(host="127.0.0.1", debug=False, port=6600)
+app.run(host="164.132.229.216", debug=False, port=6600)
 # if __name__ == "__main__":
+
+# salut
