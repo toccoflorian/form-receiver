@@ -1,2 +1,4 @@
 *.env
 fiches_client/
+myenv/
+__pycache__/
