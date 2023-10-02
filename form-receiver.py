@@ -5,6 +5,7 @@ import os
 from dotenv import load_dotenv
 import requests
 from werkzeug.utils import escape
+import json
 
 
 def create_filename(type, given_name, family_name, date):
@@ -20,10 +21,9 @@ def format_date(date):
     heure_str = heure.split(":")[0] + "h" + heure.split(":")[1]
     return [date_str_final, heure_str]
 
-def send_data_by_email(data, filename):
+def send_data_by_email(data:str, filename:str):
 
     load_dotenv()
-
     mail_user = 'ParlonsPC@mail.com'
     api_url = os.getenv("MAILGUN_API_URL")
     api_key = os.getenv("MAILGUN_API_KEY")
@@ -46,22 +46,61 @@ def format_data(data, date):
         
     return data_str
 
-def save_data(data):
+def save_data_manager(data):
     date = format_date(datetime.today())
     filename = create_filename(data["cette-personne-veut"], data["given-name"], data["family-name"], date)
     formated_data = format_data(data, date)
-    f = open(("./fiches_client/" + filename + ".txt"), "w")
-    f.write(formated_data)
+    save_data_on_json(data, filename)
+    return formated_data, filename
+
+def sanitize_data(data):
+    for i in data:
+        old = data[i]
+        data[i] = str(escape(old))
+    return data
+
+def create_dir():
+    os.mkdir("./fiches_client")
+    f=open("./fiches_client/fiches.json", "w")
+    f.write("[]")
     f.close()
-    print('saved')
-    mail_response = send_data_by_email(formated_data, filename)
-    if mail_response.status_code == 200:
-        print("mail ok")
-    return mail_response.status_code
 
+def create_file():
+    f=open("./fiches_client/fiches.json", "w")
+    f.write("[]")
+    f.close()
 
+def save_data_on_json(data, filename):
+    decoupe = filename.split("___")
+    client, date, heure, type = decoupe[1], decoupe[2], decoupe[3], decoupe[0]
+    fiches = {
+        "client": client,
+        "date": date,
+        "heure": heure,
+        "type": type,
+        "fiche": data
+    }
+
+    if not os.path.isdir("./fiches_client"):
+        create_dir()
+    elif not os.path.isfile("./fiches_client/fiches.json"):
+        create_file()
+        
+
+    with open("./fiches_client/fiches.json", "r") as file:
+        fichier = file.read()
+        if len(json.loads(fichier)) < 1:
+            new_string = json.dumps([fiches])
+        else:
+            new_string = fichier[:-1] + ("," + json.dumps(fiches) + "]")
+
+        file.close()
+
+    with open("./fiches_client/fiches.json", "w") as file:
+        file.write(new_string)
+
+# Flask App
 app = Flask(__name__)
-
 
 CORS(app)
 #CORS(app, resources={r"/164.132.229.216": {"origins": "164.132.229.216"}})
@@ -69,17 +108,26 @@ CORS(app)
 @app.route('/', methods=['GET', 'POST'])
 
 def index():
+
     data = request.form.to_dict()
-    # Afficher les données reçues
-    print(data)
-    for i in data:
-        old = data[i]
-        data[i] = escape(old)
-    print(data)
-    status_code = save_data(data)
+
+    data = sanitize_data(data)
+
+    formated_data, filename = save_data_manager(data)
+
+    mail_response = send_data_by_email(formated_data, filename)
+
+    status_code = mail_response.status_code
+
+    if status_code == 200:
+        print("mail ok")
+
     return jsonify({"message": status_code})
 
-app.run(host="164.132.229.216", debug=False, port=6600)
+    
+    # return jsonify({"message": 200})
+
+app.run(host="127.0.0.1", debug=False, port=6600)
 # if __name__ == "__main__":
 
 # salut
