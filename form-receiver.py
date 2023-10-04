@@ -26,7 +26,7 @@ def format_date(date):
 
 def send_data_by_email(data:str, filename:str):
 
-    load_dotenv()
+    
     mail_user = 'ParlonsPC@mail.com'
     api_url = os.getenv("MAILGUN_API_URL")
     api_key = os.getenv("MAILGUN_API_KEY")
@@ -137,11 +137,17 @@ def flask_receiver():
 
 
 def get_fiches_json_data():
-    with open("./fiches_client/fiches.json", "r") as file:
-        json_data = file.read()
-        file.close()
-        return json_data 
-    
+    try:
+        with open("./fiches_client/fiches.json", "r") as file:
+            json_data = file.read()
+            file.close()
+            return json_data 
+    except:
+        if not os.path.isdir("./fiches_client"):
+            create_dir()
+        elif not os.path.isfile("./fiches_client/fiches.json"):
+            create_file()
+
 
 def get_session_id_and_signature():
     session_id = secrets.token_hex(16)
@@ -183,14 +189,16 @@ def check_session_validity(data):
 
 
 # sender
-@app.route('/get-fiches/', methods=['GET', "POST"])
+@app.route('/get-fiches/', methods=[ "POST"])
 
 def flask_sender():
 
-    password = request.get_json() 
+    password = request.get_json()
+    # os.environ.
+    env_password = os.getenv("PASS")
 
-    if password != os.getenv("PASS"):
-        print(password)
+    if password != env_password:
+        print(password, "=>", env_password)
     else:
         session_id, signature = get_session_id_and_signature()
         data_to_send_objet = json.loads(get_fiches_json_data())
@@ -218,6 +226,7 @@ def flask_sendersession():
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", debug=False, port=6601)
+    load_dotenv(".env")
 
     
 
