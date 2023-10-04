@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
 from datetime import datetime
 import os
@@ -6,6 +6,9 @@ from dotenv import load_dotenv
 import requests
 from werkzeug.utils import escape
 import json
+import secrets
+import hmac
+import hashlib
 
 
 def create_filename(type, given_name, family_name, date):
@@ -47,10 +50,12 @@ def format_data(data, date):
     return data_str
 
 def save_data_manager(data):
-    date = format_date(datetime.today())
+    time = datetime.today()
+    date = format_date(time)
+    timestamp = int(time.timestamp())
     filename = create_filename(data["cette-personne-veut"], data["given-name"], data["family-name"], date)
     formated_data = format_data(data, date)
-    save_data_on_json(data, filename)
+    save_data_on_json(data, filename, timestamp)
     return formated_data, filename
 
 def sanitize_data(data):
@@ -62,24 +67,25 @@ def sanitize_data(data):
 def create_dir():
     os.mkdir("./fiches_client")
     f=open("./fiches_client/fiches.json", "w")
-    f.write("[]")
+    f.write("{}")
     f.close()
 
 def create_file():
     f=open("./fiches_client/fiches.json", "w")
-    f.write("[]")
+    f.write("{}")
     f.close()
 
-def save_data_on_json(data, filename):
+def save_data_on_json(data, filename, timestamp):
     decoupe = filename.split("___")
     client, date, heure, type = decoupe[1], decoupe[2], decoupe[3], decoupe[0]
     fiches = {
-        "client": client,
-        "date": date,
-        "heure": heure,
-        "type": type,
-        "fiche": data
-    }
+        timestamp:{
+            "client": client,
+            "date": date,
+            "heure": heure,
+            "type": type,
+            "fiche": data
+    }}
 
     if not os.path.isdir("./fiches_client"):
         create_dir()
@@ -90,9 +96,9 @@ def save_data_on_json(data, filename):
     with open("./fiches_client/fiches.json", "r") as file:
         fichier = file.read()
         if len(json.loads(fichier)) < 1:
-            new_string = json.dumps([fiches])
+            new_string = json.dumps(fiches)
         else:
-            new_string = fichier[:-1] + ("," + json.dumps(fiches) + "]")
+            new_string = fichier[:-1] + ("," + json.dumps(fiches)[1:-1] + "}")
 
         file.close()
 
@@ -105,9 +111,10 @@ app = Flask(__name__)
 CORS(app)
 #CORS(app, resources={r"/164.132.229.216": {"origins": "164.132.229.216"}})
 
-@app.route('/', methods=['GET', 'POST'])
+# receiver
+@app.route('/', methods=['POST'])
 
-def index():
+def flask_receiver():
 
     data = request.form.to_dict()
 
@@ -115,19 +122,102 @@ def index():
 
     formated_data, filename = save_data_manager(data)
 
-    mail_response = send_data_by_email(formated_data, filename)
+    # mail_response = send_data_by_email(formated_data, filename)
 
-    status_code = mail_response.status_code
+    # status_code = mail_response.status_code
 
-    if status_code == 200:
-        print("mail ok")
+    # if status_code == 200:
+    #     print("mail ok")
 
-    return jsonify({"message": status_code})
+    # return jsonify({"message": status_code})
 
     
-    # return jsonify({"message": 200})
+    return jsonify({"message": 200})
 
-app.run(host="127.0.0.1", debug=False, port=6600)
-# if __name__ == "__main__":
 
-# salut
+
+def get_fiches_json_data():
+    with open("./fiches_client/fiches.json", "r") as file:
+        json_data = file.read()
+        file.close()
+        return json_data 
+    
+
+def get_session_id_and_signature():
+    session_id = secrets.token_hex(16)
+
+    secret_key = os.getenv("SECRET_STRING").encode("utf-8")
+    code_bytes = session_id.encode("utf-8")
+
+    hasher = hmac.new(secret_key, code_bytes, hashlib.sha256)
+    signature = hasher.hexdigest()
+
+    with open("./session/session.json", "w") as session_file:
+        session_file.write(json.dumps(session_id))
+        session_file.close()
+    
+    return session_id, signature
+
+def check_session_validity(data):
+    decoupe = data.split(";")
+    session_sended = ""
+    signature_sended = ""
+    for i in decoupe:
+        print("i:::",i.split("=")[0] == " signature","+"+i)
+        if i.split("=")[0] == "session":
+            session_sended = i.split("=")[1]
+        elif i.split("=")[0].strip(" ") == "signature":
+            signature_sended = i.split("=")[1]
+
+    with open("./session/session.json", "r") as session_file:
+        session_id = session_file.read()
+        session_file.close()
+    hasher = hmac.new(os.getenv("SECRET_STRING").encode("utf-8"), session_sended.encode("utf-8"), hashlib.sha256)
+    print("1",json.loads(session_id), hasher.hexdigest())
+    print("2",session_sended, signature_sended)
+    if session_sended == json.loads(session_id) and signature_sended == hasher.hexdigest():
+        print("check session")
+        return True
+    print("no check session")
+    return False
+
+
+# sender
+@app.route('/get-fiches/', methods=['GET', "POST"])
+
+def flask_sender():
+
+    password = request.get_json() 
+
+    if password != os.getenv("PASS"):
+        print(password)
+    else:
+        session_id, signature = get_session_id_and_signature()
+        data_to_send_objet = json.loads(get_fiches_json_data())
+        data_to_send_objet['cookies'] = {
+            "session": session_id,
+            "signature": signature
+        }
+        data = json.dumps(data_to_send_objet)
+        return jsonify(data)
+    
+    return jsonify("bad")
+
+# sender session
+@app.route('/getsession-fiches/', methods=['GET', "POST"])
+
+def flask_sendersession():
+
+    cookies = request.get_json()
+
+    if check_session_validity(cookies):
+        return jsonify(get_fiches_json_data())
+    else:
+        return jsonify("Des cookies de connexion sont presents mais incorrects, essayez de supprimer les cookies puis entrez le mot de passe.")
+
+
+if __name__ == "__main__":
+    app.run(host="127.0.0.1", debug=False, port=6601)
+
+    
+
