@@ -65,13 +65,13 @@ def sanitize_data(data):
     return data
 
 def create_dir():
-    os.mkdir("./fiches_client")
-    f=open("./fiches_client/fiches.json", "w")
+    os.mkdir("./fiches-client")
+    f=open("./fiches-client/fiches.json", "w")
     f.write("{}")
     f.close()
 
 def create_file():
-    f=open("./fiches_client/fiches.json", "w")
+    f=open("./fiches-client/fiches.json", "w")
     f.write("{}")
     f.close()
 
@@ -87,13 +87,13 @@ def save_data_on_json(data, filename, timestamp):
             "fiche": data
     }}
 
-    if not os.path.isdir("./fiches_client"):
+    if not os.path.isdir("./fiches-client"):
         create_dir()
-    elif not os.path.isfile("./fiches_client/fiches.json"):
+    elif not os.path.isfile("./fiches-client/fiches.json"):
         create_file()
         
 
-    with open("./fiches_client/fiches.json", "r") as file:
+    with open("./fiches-client/fiches.json", "r") as file:
         fichier = file.read()
         if len(json.loads(fichier)) < 1:
             new_string = json.dumps(fiches)
@@ -102,7 +102,7 @@ def save_data_on_json(data, filename, timestamp):
 
         file.close()
 
-    with open("./fiches_client/fiches.json", "w") as file:
+    with open("./fiches-client/fiches.json", "w") as file:
         file.write(new_string)
 
 # Flask App
@@ -138,14 +138,14 @@ def flask_receiver():
 
 def get_fiches_json_data():
     try:
-        with open("./fiches_client/fiches.json", "r") as file:
+        with open("./fiches-client/fiches.json", "r") as file:
             json_data = file.read()
             file.close()
             return json_data 
     except:
-        if not os.path.isdir("./fiches_client"):
+        if not os.path.isdir("./fiches-client"):
             create_dir()
-        elif not os.path.isfile("./fiches_client/fiches.json"):
+        elif not os.path.isfile("./fiches-client/fiches.json"):
             create_file()
 
 

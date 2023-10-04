@@ -1,5 +1,5 @@
 *.env
-fiches_client/
+fiches-client/
 myenv/
 __pycache__/
 session/
