@@ -61,7 +61,10 @@ def save_data_manager(data):
 def sanitize_data(data):
     for i in data:
         old = data[i]
-        data[i] = str(escape(old))
+        if i == "given-name":
+            data[i] = str(escape(old))[0].upper() + str(escape(old))[1:]
+            continue
+        data[i] = str(escape(old))[0].upper() + str(escape(old))[1:]
     return data
 
 def create_dir():
