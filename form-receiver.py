@@ -64,6 +64,9 @@ def sanitize_data(data):
         if i == "given-name":
             data[i] = str(escape(old))[0].upper() + str(escape(old))[1:]
             continue
+        if i == "family-name":
+            str(escape(old)).upper()
+            continue
         data[i] = str(escape(old))[0].upper() + str(escape(old))[1:]
     return data
 
@@ -228,7 +231,7 @@ def flask_sendersession():
 
 
 if __name__ == "__main__":
-    app.run(host="164.132.229.216", debug=False, port=6601)
+    app.run(host="https://floriantocco.site", debug=False, port=6601)
     load_dotenv(".env")
 
     
