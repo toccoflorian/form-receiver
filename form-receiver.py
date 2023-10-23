@@ -238,9 +238,9 @@ def flask_sendersession():
 @app.route('/set-fiche-status/', methods=["POST"])
 
 def flask_set_fiche_status():
+    print("status fiches")
 
     fiche_id_to_change = request.get_json()
-
 
     if check_session_validity(cookies):
         print("fiche_id_to_change", fiche_id_to_change)
