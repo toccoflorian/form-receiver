@@ -239,7 +239,7 @@ def flask_set_fiche_status():
 
     fiche_id_to_change = request.get_json()
 
-    print(fiche_id_to_change)
+    print("fiche_id_to_change", fiche_id_to_change)
 
     if check_session_validity(cookies):
         return jsonify(get_fiches_json_data())
