@@ -232,6 +232,22 @@ def flask_sendersession():
         return jsonify("Des cookies de connexion sont presents mais incorrects, essayez de supprimer les cookies puis entrez le mot de passe.")
 
 
+# change le status des fiches
+@app.route('/set-fiche-status/', methods=["POST"])
+
+def flask_set_fiche_status():
+
+    fiche_id_to_change = request.get_json()
+
+    print(fiche_id_to_change)
+
+    if check_session_validity(cookies):
+        return jsonify(get_fiches_json_data())
+    else:
+        return jsonify("Des cookies de connexion sont presents mais incorrects, essayez de supprimer les cookies puis entrez le mot de passe.")
+
+
+
 if __name__ == "__main__":
     app.run(host="127.0.0.1", debug=False, port=6601)
     load_dotenv(".env")
