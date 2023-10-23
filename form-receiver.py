@@ -252,6 +252,7 @@ def flask_set_fiche_status():
     with open("./fiches-client/fiches.json", "w") as file:
         file.write(json.dumps(fiches))
         file.close()
+    return True
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", debug=False, port=6601)
