@@ -242,7 +242,7 @@ def flask_set_fiche_status():
     fiche_id_to_change = request.get_json()
 
     json_fiches = get_fiches_json_data()
-    fiches = json.load(json_fiches)
+    fiches = json.dumps(json_fiches)
     print(type(fiches))
 
     for fiche in fiches:
