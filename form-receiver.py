@@ -134,7 +134,8 @@ def flask_receiver():
     status_code = mail_response.status_code
 
     if status_code == 200:
-        print("mail ok")
+        # print("mail ok")
+        pass
 
     return jsonify({"message": status_code})
 
@@ -176,7 +177,7 @@ def check_session_validity(data):
     session_sended = ""
     signature_sended = ""
     for i in decoupe:
-        print("i:::",i.split("=")[0] == " signature","+"+i)
+        # print("i:::",i.split("=")[0] == " signature","+"+i)
         if i.split("=")[0] == "session":
             session_sended = i.split("=")[1]
         elif i.split("=")[0].strip(" ") == "signature":
@@ -186,12 +187,12 @@ def check_session_validity(data):
         session_id = session_file.read()
         session_file.close()
     hasher = hmac.new(os.getenv("SECRET_STRING").encode("utf-8"), session_sended.encode("utf-8"), hashlib.sha256)
-    print("1",json.loads(session_id), hasher.hexdigest())
-    print("2",session_sended, signature_sended)
+    # print("1",json.loads(session_id), hasher.hexdigest())
+    # print("2",session_sended, signature_sended)
     if session_sended == json.loads(session_id) and signature_sended == hasher.hexdigest():
-        print("check session")
+        # print("check session")
         return True
-    print("no check session")
+    # print("no check session")
     return False
 
 
@@ -205,7 +206,8 @@ def flask_sender():
     env_password = os.getenv("PASS")
 
     if password != env_password:
-        print(password, "=>", env_password)
+        # print(password, "=>", env_password)
+        pass
     else:
         session_id, signature = get_session_id_and_signature()
         data_to_send_objet = json.loads(get_fiches_json_data())
