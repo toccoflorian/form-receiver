@@ -239,9 +239,9 @@ def flask_set_fiche_status():
 
     fiche_id_to_change = request.get_json()
 
-    print("fiche_id_to_change", fiche_id_to_change)
 
     if check_session_validity(cookies):
+        print("fiche_id_to_change", fiche_id_to_change)
         return jsonify(get_fiches_json_data())
     else:
         return jsonify("Des cookies de connexion sont presents mais incorrects, essayez de supprimer les cookies puis entrez le mot de passe.")
