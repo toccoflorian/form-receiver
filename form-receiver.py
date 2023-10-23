@@ -111,7 +111,7 @@ def save_data_on_json(data, filename, timestamp):
     with open("./fiches-client/fiches.json", "w") as file:
         file.write(new_string)
 
-# Flask App
+# recepteur formulaire
 app = Flask(__name__)
 
 CORS(app)
@@ -128,17 +128,17 @@ def flask_receiver():
 
     formated_data, filename = save_data_manager(data)
 
-    # mail_response = send_data_by_email(formated_data, filename)
+    mail_response = send_data_by_email(formated_data, filename)
 
-    # status_code = mail_response.status_code
+    status_code = mail_response.status_code
 
-    # if status_code == 200:
-    #     print("mail ok")
+    if status_code == 200:
+        print("mail ok")
 
-    # return jsonify({"message": status_code})
+    return jsonify({"message": status_code})
 
     
-    return jsonify({"message": 200})
+    #return jsonify({"message": 200})
 
 
 
@@ -194,7 +194,7 @@ def check_session_validity(data):
     return False
 
 
-# sender
+# obtenir les fiches avec l'identifiant et le mot de passe puis les identifiants de session
 @app.route('/get-fiches/', methods=[ "POST"])
 
 def flask_sender():
@@ -217,7 +217,8 @@ def flask_sender():
     
     return jsonify("bad")
 
-# sender session
+
+# obtenir les fiches avec les identifiants de session
 @app.route('/getsession-fiches/', methods=['GET', "POST"])
 
 def flask_sendersession():
@@ -231,7 +232,7 @@ def flask_sendersession():
 
 
 if __name__ == "__main__":
-    app.run(host="https://floriantocco.site", debug=False, port=6601)
+    app.run(host="127.0.0.1", debug=False, port=6601)
     load_dotenv(".env")
 
     
