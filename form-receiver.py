@@ -27,7 +27,7 @@ def format_date(date):
 def send_data_by_email(data:str, filename:str):
 
     
-    mail_user = 'ParlonsPC@mail.com'
+    mail_user = 't.florian181181@gmail.com'
     api_url = os.getenv("MAILGUN_API_URL")
     api_key = os.getenv("MAILGUN_API_KEY")
 
@@ -38,7 +38,7 @@ def send_data_by_email(data:str, filename:str):
         api_url,
         auth=("api", api_key),
         data={"from": mail_user,
-              "to": 't.florian181181@gmail.com',
+              "to": 't.florian181181@gmail.com;t.florian181181@gmail.com',
               "subject": filename,
               "text": data})
 
