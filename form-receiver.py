@@ -247,7 +247,7 @@ def flask_set_fiche_status():
     for fiche in fiches:
         print(fiche)
         if fiche == fiche_id_to_change:
-            fiche["status"] = True if fiche["status"] else False
+            fiches[fiche]["status"] = True if fiches[fiche]["status"] else False
 
     with open("./fiches-client/fiches.json", "r") as file:
         file.write(json.loads(fiches))
