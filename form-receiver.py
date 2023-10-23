@@ -90,7 +90,8 @@ def save_data_on_json(data, filename, timestamp):
             "date": date,
             "heure": heure,
             "type": type,
-            "fiche": data
+            "fiche": data,
+            "status": True,
     }}
 
     if not os.path.isdir("./fiches-client"):
