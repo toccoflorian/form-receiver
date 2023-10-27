@@ -14,8 +14,10 @@ import hashlib
 def create_filename(type, given_name, family_name, date):
     return type + "___" + given_name + "-" + family_name.upper() + "___" + date[0] + "___" + date[1]
 
+
 def create_file_tittle(type, given_name, family_name, date):
-    return "\n\n\n"  + given_name + " " + family_name.upper() + " le " + date[0] + " " + date[1] +"\n\n" + type +  "\n\n\n"
+    return "\n\n\n" + given_name + " " + family_name.upper() + " le " + date[0] + " " + date[1] + "\n\n" + type + "\n\n\n"
+
 
 def format_date(date):
     date_str = str(date).split(" ")[0].split("-")
@@ -24,10 +26,10 @@ def format_date(date):
     heure_str = heure.split(":")[0] + "h" + heure.split(":")[1]
     return [date_str_final, heure_str]
 
-def send_data_by_email(data:str, filename:str):
 
-    
-    mail_user = 't.florian181181@gmail.com'
+def send_data_by_email(data: str, filename: str):
+
+    mail_user = 'formulaire@parlonspc.fr'
     api_url = os.getenv("MAILGUN_API_URL")
     api_key = os.getenv("MAILGUN_API_KEY")
 
@@ -42,21 +44,26 @@ def send_data_by_email(data:str, filename:str):
               "subject": filename,
               "text": data})
 
+
 def format_data(data, date):
-    data_str = create_file_tittle(data["cette-personne-veut"], data["given-name"], data["family-name"], date)
+    data_str = create_file_tittle(
+        data["cette-personne-veut"], data["given-name"], data["family-name"], date)
     for key in data:
         data_str += key + ":\t" + data[key] + "\n\n"
-        
+
     return data_str
+
 
 def save_data_manager(data):
     time = datetime.today()
     date = format_date(time)
     timestamp = int(time.timestamp())
-    filename = create_filename(data["cette-personne-veut"], data["given-name"], data["family-name"], date)
+    filename = create_filename(
+        data["cette-personne-veut"], data["given-name"], data["family-name"], date)
     formated_data = format_data(data, date)
     save_data_on_json(data, filename, timestamp)
     return formated_data, filename
+
 
 def sanitize_data(data):
     for i in data:
@@ -70,35 +77,37 @@ def sanitize_data(data):
         data[i] = str(escape(old))[0].upper() + str(escape(old))[1:]
     return data
 
+
 def create_dir():
     os.mkdir("./fiches-client")
-    f=open("./fiches-client/fiches.json", "w")
+    f = open("./fiches-client/fiches.json", "w")
     f.write("{}")
     f.close()
 
+
 def create_file():
-    f=open("./fiches-client/fiches.json", "w")
+    f = open("./fiches-client/fiches.json", "w")
     f.write("{}")
     f.close()
+
 
 def save_data_on_json(data, filename, timestamp):
     decoupe = filename.split("___")
     client, date, heure, type = decoupe[1], decoupe[2], decoupe[3], decoupe[0]
     fiches = {
-        timestamp:{
+        timestamp: {
             "client": client,
             "date": date,
             "heure": heure,
             "type": type,
             "fiche": data,
             "status": False,
-    }}
+        }}
 
     if not os.path.isdir("./fiches-client"):
         create_dir()
     elif not os.path.isfile("./fiches-client/fiches.json"):
         create_file()
-        
 
     with open("./fiches-client/fiches.json", "r") as file:
         fichier = file.read()
@@ -112,15 +121,16 @@ def save_data_on_json(data, filename, timestamp):
     with open("./fiches-client/fiches.json", "w") as file:
         file.write(new_string)
 
+
 # recepteur formulaire
 app = Flask(__name__)
 
 CORS(app)
-#CORS(app, resources={r"/164.132.229.216": {"origins": "164.132.229.216"}})
 
 # receiver
-@app.route('/', methods=['POST'])
 
+
+@app.route('/', methods=['POST'])
 def flask_receiver():
 
     data = request.form.to_dict()
@@ -133,15 +143,7 @@ def flask_receiver():
 
     status_code = mail_response.status_code
 
-    if status_code == 200:
-        # print("mail ok")
-        pass
-
     return jsonify({"message": status_code})
-
-    
-    #return jsonify({"message": 200})
-
 
 
 def get_fiches_json_data():
@@ -149,7 +151,7 @@ def get_fiches_json_data():
         with open("./fiches-client/fiches.json", "r") as file:
             json_data = file.read()
             file.close()
-            return json_data 
+            return json_data
     except:
         if not os.path.isdir("./fiches-client"):
             create_dir()
@@ -169,15 +171,15 @@ def get_session_id_and_signature():
     with open("./session/session.json", "w") as session_file:
         session_file.write(json.dumps(session_id))
         session_file.close()
-    
+
     return session_id, signature
+
 
 def check_session_validity(data):
     decoupe = data.split(";")
     session_sended = ""
     signature_sended = ""
     for i in decoupe:
-        # print("i:::",i.split("=")[0] == " signature","+"+i)
         if i.split("=")[0] == "session":
             session_sended = i.split("=")[1]
         elif i.split("=")[0].strip(" ") == "signature":
@@ -186,27 +188,21 @@ def check_session_validity(data):
     with open("./session/session.json", "r") as session_file:
         session_id = session_file.read()
         session_file.close()
-    hasher = hmac.new(os.getenv("SECRET_STRING").encode("utf-8"), session_sended.encode("utf-8"), hashlib.sha256)
-    # print("1",json.loads(session_id), hasher.hexdigest())
-    # print("2",session_sended, signature_sended)
+    hasher = hmac.new(os.getenv("SECRET_STRING").encode(
+        "utf-8"), session_sended.encode("utf-8"), hashlib.sha256)
     if session_sended == json.loads(session_id) and signature_sended == hasher.hexdigest():
-        # print("check session")
         return True
-    # print("no check session")
     return False
 
 
 # obtenir les fiches avec l'identifiant et le mot de passe puis les identifiants de session
-@app.route('/get-fiches/', methods=[ "POST"])
-
+@app.route('/get-fiches/', methods=["POST"])
 def flask_sender():
 
     password = request.get_json()
-    # os.environ.
     env_password = os.getenv("PASS")
 
     if password != env_password:
-        # print(password, "=>", env_password)
         pass
     else:
         session_id, signature = get_session_id_and_signature()
@@ -217,13 +213,12 @@ def flask_sender():
         }
         data = json.dumps(data_to_send_objet)
         return jsonify(data)
-    
+
     return jsonify("bad")
 
 
 # obtenir les fiches avec les identifiants de session
 @app.route('/getsession-fiches/', methods=['GET', "POST"])
-
 def flask_sendersession():
 
     cookies = request.get_json()
@@ -236,7 +231,6 @@ def flask_sendersession():
 
 # change le status des fiches
 @app.route('/set-fiche-status/', methods=["POST"])
-
 def flask_set_fiche_status():
 
     fiche_id_to_change = request.get_json()
@@ -254,9 +248,7 @@ def flask_set_fiche_status():
         file.close()
     return jsonify("ok")
 
+
 if __name__ == "__main__":
     app.run(host="127.0.0.1", debug=False, port=6601)
     load_dotenv(".env")
-
-    
-
