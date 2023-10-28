@@ -40,7 +40,7 @@ def send_data_by_email(data: str, filename: str):
         api_url,
         auth=("api", api_key),
         data={"from": mail_user,
-              "to": 't.florian181181@gmail.com;t.florian181181@gmail.com',
+              "to": 'victor@parlonspc.fr;t.contact@parlonspc.fr',
               "subject": filename,
               "text": data})
 
@@ -239,7 +239,6 @@ def flask_set_fiche_status():
     fiches = json.loads(json_fiches)
 
     for fiche in fiches:
-        # print(fiche)
         if fiche == fiche_id_to_change:
             fiches[fiche]["status"] = False if fiches[fiche]["status"] else True
 
