@@ -1,7 +1,4 @@
-import Flask
-import request
-import jsonify
-import make_response
+from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
 from datetime import datetime
 import os
