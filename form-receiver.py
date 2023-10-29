@@ -29,7 +29,7 @@ def format_date(date):
 
 def send_data_by_email(data: str, filename: str):
 
-    mail_user = 'formulaire@parlonspc.fr'
+    mail_user = 'formulaire@formulaire-parlonspc.fr'
     api_url = os.getenv("MAILGUN_API_URL")
     api_key = os.getenv("MAILGUN_API_KEY")
 
