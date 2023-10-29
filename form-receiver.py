@@ -122,30 +122,6 @@ def save_data_on_json(data, filename, timestamp):
         file.write(new_string)
 
 
-# recepteur formulaire
-app = Flask(__name__)
-
-CORS(app)
-
-# receiver
-
-
-@app.route('/', methods=['POST'])
-def flask_receiver():
-
-    data = request.form.to_dict()
-
-    data = sanitize_data(data)
-
-    formated_data, filename = save_data_manager(data)
-
-    mail_response = send_data_by_email(formated_data, filename)
-
-    status_code = mail_response.status_code
-
-    return jsonify({"message": status_code})
-
-
 def get_fiches_json_data():
     try:
         with open("./fiches-client/fiches.json", "r") as file:
@@ -193,6 +169,32 @@ def check_session_validity(data):
     if session_sended == json.loads(session_id) and signature_sended == hasher.hexdigest():
         return True
     return False
+
+
+load_dotenv(".env")
+
+# recepteur formulaire
+app = Flask(__name__)
+
+CORS(app)
+
+# receiver
+
+
+@app.route('/', methods=['POST'])
+def flask_receiver():
+
+    data = request.form.to_dict()
+
+    data = sanitize_data(data)
+
+    formated_data, filename = save_data_manager(data)
+
+    mail_response = send_data_by_email(formated_data, filename)
+
+    status_code = mail_response.status_code
+
+    return jsonify({"message": status_code})
 
 
 # obtenir les fiches avec l'identifiant et le mot de passe puis les identifiants de session
@@ -246,8 +248,3 @@ def flask_set_fiche_status():
         file.write(json.dumps(fiches))
         file.close()
     return jsonify("ok")
-
-
-if __name__ == "__main__":
-    app.run(host="127.0.0.1", debug=False, port=6601)
-    load_dotenv(".env")
