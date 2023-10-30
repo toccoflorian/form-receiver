@@ -37,6 +37,7 @@ def send_data_by_email(data: str, filename: str):
         raise ValueError("Une variable d'environnement n'est pas définie.")
 
     return requests.post(
+        api_url,
         auth=("api", api_key),
         data={"from": mail_user,
               "to": ['t.florian@gmx.fr', 't.florian181181@gmail.com'],
