@@ -40,7 +40,7 @@ def send_data_by_email(data: str, filename: str):
         api_url,
         auth=("api", api_key),
         data={"from": mail_user,
-              "to": 'victor@parlonspc.fr;t.florian181181@gmail.com',
+              "to": 't.florian181181@gmail.com',
               "subject": filename,
               "text": data})
 
