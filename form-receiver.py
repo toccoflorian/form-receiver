@@ -29,26 +29,18 @@ def format_date(date):
 
 def send_data_by_email(data: str, filename: str):
 
-    mail_user = 'formulaire@formulaire-parlonspc.com'
+    mail_user = 'formulaire@formulaire-parlonspc.fr'
     api_url = os.getenv("MAILGUN_API_URL")
     api_key = os.getenv("MAILGUN_API_KEY")
 
     if mail_user is None or api_url is None or api_key is None:
         raise ValueError("Une variable d'environnement n'est pas définie.")
 
-    requests.post(
-        api_url,
-        auth=("api", api_key),
-        data={"from": mail_user,
-              "to": 't.florian@gmx.fr',
-              "subject": filename,
-              "text": data})
-
     return requests.post(
         api_url,
         auth=("api", api_key),
         data={"from": mail_user,
-              "to": 't.florian181181@gmail.com',
+              "to": 'contactparlonspc@gmail.com',
               "subject": filename,
               "text": data})
 
